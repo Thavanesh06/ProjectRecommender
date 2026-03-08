@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ProjectMatch — Smart Project Recommender</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <!-- ── Navigation ──────────────────────────────────────────── -->
+  <nav>
+    <div class="logo">Project<span class="accent">Match</span><span class="dot">.</span></div>
+    <div class="nav-links">
+      <button class="nav-btn active" onclick="showPage('recommend', this)">Find Projects</button>
+      <button class="nav-btn" onclick="showPage('browse', this)">Browse All</button>
+      <button class="nav-btn" onclick="showPage('about', this)">How It Works</button>
+    </div>
+  </nav>
+
+  <!-- ── Hero Section ────────────────────────────────────────── -->
+  <section class="hero">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      Content-Based Filtering · TF-IDF · Cosine Similarity
+    </div>
+    <h1>Find Your<br><span class="grad-text">Perfect Project</span></h1>
+    <p class="hero-sub">
+      Enter your skills and interests — the ML engine matches you
+      with the most relevant student projects instantly.
+    </p>
+  </section>
+
+  <!-- ── Main Content ─────────────────────────────────────────── -->
+  <main class="main">
+
+    <!-- ── Page: Find Projects ──────────────────────────────── -->
+    <div class="page active" id="page-recommend">
+
+      <!-- Stats -->
+      <div class="stats-banner">
+        <div class="stat-card">
+          <div class="stat-num">40</div>
+          <div class="stat-label">Total Projects</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">12</div>
+          <div class="stat-label">Domains</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">TF-IDF</div>
+          <div class="stat-label">Algorithm</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">3</div>
+          <div class="stat-label">Difficulty Levels</div>
+        </div>
+      </div>
+
+      <!-- Input Form -->
+      <div class="form-card">
+        <div class="form-card-header">
+          <h2>Tell us about yourself</h2>
+          <p>Add your skills and interests. Press Enter or comma after each item.</p>
+        </div>
+
+        <div class="form-grid">
+
+          <!-- Skills -->
+          <div class="form-group">
+            <label class="form-label">Your Skills</label>
+            <div class="suggestions-wrap">
+              <div class="tag-input-wrap" id="skills-wrap"
+                   onclick="document.getElementById('skills-input').focus()">
+                <input type="text" id="skills-input"
+                       placeholder="e.g. python, react, pandas…"
+                       autocomplete="off"/>
+              </div>
+              <div class="suggestions-list" id="skills-suggestions"></div>
+            </div>
+          </div>
+
+          <!-- Interests -->
+          <div class="form-group">
+            <label class="form-label">Your Interests</label>
+            <div class="suggestions-wrap">
+              <div class="tag-input-wrap" id="interests-wrap"
+                   onclick="document.getElementById('interests-input').focus()">
+                <input type="text" id="interests-input"
+                       placeholder="e.g. machine learning, web dev…"
+                       autocomplete="off"/>
+              </div>
+              <div class="suggestions-list" id="interests-suggestions"></div>
+            </div>
+          </div>
+
+          <!-- Difficulty -->
+          <div class="form-group">
+            <label class="form-label">Preferred Difficulty</label>
+            <select class="form-select" id="difficulty-select">
+              <option value="Any">Any Level</option>
+              <option value="Beginner">Beginner</option>
+              <option value="Intermediate">Intermediate</option>
+              <option value="Advanced">Advanced</option>
+            </select>
+          </div>
+
+          <!-- Domain Chips -->
+          <div class="form-group">
+            <label class="form-label">Preferred Domain (optional)</label>
+            <div class="chip-group" id="domain-chips"></div>
+          </div>
+
+          <!-- Submit -->
+          <div class="form-group full">
+            <button class="btn-primary" onclick="getRecommendations()">
+              Get Recommendations <span class="btn-arrow">→</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Analyzing your profile…</p>
+      </div>
+
+      <!-- Results -->
+      <div id="results-section" style="display:none">
+        <div class="section-header">
+          <h2>Recommended For You</h2>
+          <span class="count-badge" id="results-count"></span>
+        </div>
+        <div class="cards-grid" id="results-grid"></div>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty" id="empty-state">
+        <div class="empty-icon">🔍</div>
+        <h3>No matches found</h3>
+        <p>Try adding more skills or changing your difficulty preference.</p>
+      </div>
+
+    </div>
+
+    <!-- ── Page: Browse All ──────────────────────────────────── -->
+    <div class="page" id="page-browse">
+      <div class="section-header">
+        <h2>All Projects</h2>
+        <span class="count-badge" id="browse-count"></span>
+      </div>
+      <div class="filter-bar">
+        <select class="filter-select" id="filter-domain" onchange="filterBrowse()">
+          <option value="">All Domains</option>
+        </select>
+        <select class="filter-select" id="filter-diff" onchange="filterBrowse()">
+          <option value="">All Levels</option>
+          <option>Beginner</option>
+          <option>Intermediate</option>
+          <option>Advanced</option>
+        </select>
+      </div>
+      <div class="cards-grid" id="browse-grid"></div>
+    </div>
+
+    <!-- ── Page: How It Works ────────────────────────────────── -->
+    <div class="page" id="page-about">
+      <div class="section-header" style="margin-bottom:28px">
+        <h2>How ProjectMatch Works</h2>
+      </div>
+      <div class="about-grid">
+
+        <div class="about-card">
+          <h3><span class="about-icon">🧠</span> ML Algorithm</h3>
+          <p>
+            ProjectMatch uses <strong>Content-Based Filtering</strong> with TF-IDF vectorization.
+            Your skills and interests are converted into a numerical vector, then compared against
+            all project descriptions using cosine similarity to surface the best matches.
+          </p>
+        </div>
+
+        <div class="about-card">
+          <h3><span class="about-icon">⚙️</span> Tech Stack</h3>
+          <div class="pipeline">
+            <div class="pipeline-step"><div class="step-num">F</div>HTML + CSS + JavaScript Frontend</div>
+            <div class="pipeline-step"><div class="step-num">B</div>Python Flask REST API Backend</div>
+            <div class="pipeline-step"><div class="step-num">M</div>Pandas + Scikit-learn ML Engine</div>
+            <div class="pipeline-step"><div class="step-num">D</div>MySQL Relational Database</div>
+          </div>
+        </div>
+
+        <div class="about-card">
+          <h3><span class="about-icon">📐</span> Recommendation Pipeline</h3>
+          <div class="pipeline">
+            <div class="pipeline-step"><div class="step-num">1</div>Collect student skills and interests</div>
+            <div class="pipeline-step"><div class="step-num">2</div>Build TF-IDF user profile vector</div>
+            <div class="pipeline-step"><div class="step-num">3</div>Compute cosine similarity scores</div>
+            <div class="pipeline-step"><div class="step-num">4</div>Filter by difficulty and return top matches</div>
+          </div>
+        </div>
+
+        <div class="about-card">
+          <h3><span class="about-icon">📊</span> Why Content-Based?</h3>
+          <p>
+            Content-based filtering works purely from the student's own profile — no other
+            students' data is needed. This solves the <strong>cold start problem</strong>
+            and ensures privacy, making it ideal for academic environments.
+          </p>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ── Project Detail Modal ──────────────────────────────────── -->
+  <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+    <div class="modal">
+      <div class="modal-head">
+        <span class="domain-badge" id="modal-domain"></span>
+        <div class="modal-title-row">
+          <h2 class="modal-title" id="modal-title"></h2>
+          <button class="modal-close" onclick="closeModalDirect()">✕</button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc" id="modal-desc"></p>
+        <div class="modal-section">
+          <div class="modal-section-label">Required Skills</div>
+          <div class="card-skills" id="modal-skills"></div>
+        </div>
+        <div class="modal-section">
+          <div class="modal-section-label">Tags</div>
+          <div class="card-skills" id="modal-tags"></div>
+        </div>
+        <div class="modal-section">
+          <div class="modal-section-label">Difficulty</div>
+          <div class="difficulty-row" id="modal-difficulty"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Toast Notification ────────────────────────────────────── -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ── Scripts ───────────────────────────────────────────────── -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+</body>
+</html>
